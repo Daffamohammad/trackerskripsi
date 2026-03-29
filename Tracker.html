@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracker Skripsi — Aditya</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --accent: #f59e0b;
+    --green: #10b981;
+    --green-light: #d1fae5;
+    --red: #ef4444;
+    --red-light: #fee2e2;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    line-height: 1.6;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 32px;
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    border-radius: var(--radius);
+    color: white;
+  }
+  .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .header p { opacity: 0.85; font-size: 15px; }
+
+  /* Progress Summary Cards */
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid var(--gray-200);
+  }
+  .card-label { font-size: 13px; color: var(--gray-500); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card-value { font-size: 32px; font-weight: 700; margin-top: 4px; }
+  .card-sub { font-size: 13px; color: var(--gray-500); margin-top: 2px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--gray-200);
+    padding-bottom: 0;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--gray-500);
+    border: none;
+    background: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--primary); }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Section */
+  .section {
+    background: white;
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid var(--gray-200);
+  }
+  .section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .section .subtitle {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-bottom: 20px;
+  }
+
+  /* Gantt Chart */
+  .gantt-wrapper { overflow-x: auto; }
+  .gantt-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 950px; }
+  .gantt-table th {
+    padding: 10px 4px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--gray-700);
+    border-bottom: 2px solid var(--gray-200);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .gantt-table th:first-child { text-align: left; min-width: 280px; padding-left: 12px; }
+  .gantt-table td {
+    padding: 6px 2px;
+    border-bottom: 1px solid var(--gray-100);
+    text-align: center;
+    position: relative;
+  }
+  .gantt-table td:first-child {
+    text-align: left;
+    padding-left: 12px;
+    font-weight: 500;
+    color: var(--gray-700);
+  }
+  .gantt-table tr:hover { background: var(--gray-50); }
+
+  .gantt-bar {
+    height: 22px;
+    border-radius: 4px;
+    margin: 2px 1px;
+  }
+  .bar-write { background: #3b82f6; }
+  .bar-consult { background: #8b5cf6; }
+  .bar-data { background: #f59e0b; }
+  .bar-analysis { background: #ef4444; }
+  .bar-result { background: #10b981; }
+  .bar-bimbing { background: #06b6d4; }
+  .bar-draft { background: #ec4899; }
+  .bar-collect { background: #64748b; }
+  .bar-exam { background: #dc2626; }
+  .bar-revisi { background: #a855f7; }
+  .bar-final { background: #059669; }
+
+  .gantt-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-200);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--gray-700);
+  }
+  .legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* Checklist */
+  .checklist-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  @media (min-width: 768px) {
+    .checklist-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .checklist-group { margin-bottom: 20px; }
+  .checklist-group:last-child { margin-bottom: 0; }
+  .checklist-group-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-700);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+  .checklist-item:hover { background: var(--gray-50); }
+  .checklist-item.checked { opacity: 0.55; }
+  .checklist-item.checked .item-text { text-decoration: line-through; }
+
+  .checklist-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: var(--primary);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .item-text { font-size: 14px; color: var(--gray-700); font-weight: 500;}
+  .item-note { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+
+  /* Progress bar */
+  .progress-bar-container {
+    width: 100%;
+    height: 10px;
+    background: var(--gray-200);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #10b981);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+  .progress-text { font-size: 13px; color: var(--gray-500); text-align: right; }
+
+  /* Today indicator */
+  .today-header { background: #fef3c7 !important; border-radius: 4px; }
+
+  /* Date labels */
+  .date-label { font-size: 10px; color: var(--gray-500); font-weight: 400; display: block; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container { padding: 12px; }
+    .header { padding: 20px; }
+    .header h1 { font-size: 22px; }
+    .section { padding: 16px; }
+  }
+
+  /* Print */
+  @media print {
+    body { background: white; }
+    .header { background: #1e40af !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .gantt-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Tracker Skripsi</h1>
+    <p>Aditya — Bisnis Digital, FEB UNS &bull; Mulai: 1 Maret 2026</p>
+  </div>
+
+  <div class="summary-cards">
+    <div class="card">
+      <div class="card-label">Kegiatan Selesai</div>
+      <div class="card-value" id="tasksDone">0</div>
+      <div class="card-sub" id="tasksTotal">dari 11 kegiatan</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Persyaratan Terpenuhi</div>
+      <div class="card-value" id="reqsDone">0</div>
+      <div class="card-sub" id="reqsTotal">dari 0 item</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Skenario Aktif</div>
+      <div class="card-value" style="font-size: 24px;" id="activeScenario">Reguler</div>
+      <div class="card-sub" id="activeDates">1 Mar — 6 Jun 2026</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Status</div>
+      <div class="card-value" style="font-size: 24px; color: var(--primary);" id="statusLabel">In Progress</div>
+      <div class="card-sub" id="statusSub">Tetap Semangat!</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="scenarioReguler">Skenario Reguler (Awal Juni)</button>
+    <button class="tab" data-tab="scenarioAkselerasi">Skenario Akselerasi (Awal Mei)</button>
+    <button class="tab" data-tab="checklists">Progress & Persyaratan</button>
+  </div>
+
+  <div class="tab-content active" id="scenarioReguler">
+    <div class="section">
+      <h2>Gantt Chart — Skenario Reguler (14 Minggu)</h2>
+      <p class="subtitle">1 Maret 2026 — 6 Juni 2026 (Tempo santai, cukup ruang untuk revisi)</p>
+      <div class="gantt-wrapper">
+        <table class="gantt-table" id="ganttReguler">
+          <thead>
+            <tr>
+              <th>Kegiatan</th>
+              <th><span>M1</span><span class="date-label">1-7 Mar</span></th>
+              <th><span>M2</span><span class="date-label">8-14 Mar</span></th>
+              <th><span>M3</span><span class="date-label">15-21 Mar</span></th>
+              <th><span>M4</span><span class="date-label">22-28 Mar</span></th>
+              <th><span>M5</span><span class="date-label">29 Mar-4 Apr</span></th>
+              <th><span>M6</span><span class="date-label">5-11 Apr</span></th>
+              <th><span>M7</span><span class="date-label">12-18 Apr</span></th>
+              <th><span>M8</span><span class="date-label">19-25 Apr</span></th>
+              <th><span>M9</span><span class="date-label">26 Apr-2 Mei</span></th>
+              <th><span>M10</span><span class="date-label">3-9 Mei</span></th>
+              <th><span>M11</span><span class="date-label">10-16 Mei</span></th>
+              <th><span>M12</span><span class="date-label">17-23 Mei</span></th>
+              <th><span>M13</span><span class="date-label">24-30 Mei</span></th>
+              <th><span>M14</span><span class="date-label">31 Mei-6 Jun</span></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="gantt-legend" id="legendReguler"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="scenarioAkselerasi">
+    <div class="section">
+      <h2>Gantt Chart — Skenario Akselerasi (10 Minggu)</h2>
+      <p class="subtitle">1 Maret 2026 — 9 Mei 2026 (Tempo ketat, target daftar sidang akhir April/awal Mei)</p>
+      <div class="gantt-wrapper">
+        <table class="gantt-table" id="ganttAkselerasi">
+          <thead>
+            <tr>
+              <th>Kegiatan</th>
+              <th><span>M1</span><span class="date-label">1-7 Mar</span></th>
+              <th><span>M2</span><span class="date-label">8-14 Mar</span></th>
+              <th><span>M3</span><span class="date-label">15-21 Mar</span></th>
+              <th><span>M4</span><span class="date-label">22-28 Mar</span></th>
+              <th><span>M5</span><span class="date-label">29 Mar-4 Apr</span></th>
+              <th><span>M6</span><span class="date-label">5-11 Apr</span></th>
+              <th><span>M7</span><span class="date-label">12-18 Apr</span></th>
+              <th><span>M8</span><span class="date-label">19-25 Apr</span></th>
+              <th><span>M9</span><span class="date-label">26 Apr-2 Mei</span></th>
+              <th><span>M10</span><span class="date-label">3-9 Mei</span></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="gantt-legend" id="legendAkselerasi"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="checklists">
+    
+    <div class="checklist-grid">
+      <div class="section" style="margin-bottom: 0;">
+        <h2>Progress Kegiatan Skripsi</h2>
+        <p class="subtitle">Tandai tahapan yang sudah berhasil kamu selesaikan</p>
+        
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="taskProgressBar" style="width: 0%"></div>
+        </div>
+        <div class="progress-text" id="taskProgressText">0% selesai</div>
+        
+        <div id="taskChecklistContainer" style="margin-top: 20px;"></div>
+      </div>
+
+      <div class="section" style="margin-bottom: 0;">
+        <h2>Persyaratan Ujian (Sidang)</h2>
+        <p class="subtitle">Kelengkapan dokumen administrasi akademik FEB UNS</p>
+
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="reqProgressBar" style="width: 0%"></div>
+        </div>
+        <div class="progress-text" id="reqProgressText">0% terpenuhi</div>
+
+        <div id="reqChecklistContainer" style="margin-top: 20px;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ========================
+// DATA DEFINITIONS
+// ========================
+
+const activities = [
+  { id: 1,  name: "Penyusunan Bab 1-3",                              color: "bar-write",    legend: "#3b82f6" },
+  { id: 2,  name: "Konsultasi & Revisi Bab 1-3",                     color: "bar-consult",  legend: "#8b5cf6" },
+  { id: 3,  name: "Pengumpulan Data Historis (IHSG, LQ45, Kompas100)",color: "bar-data",     legend: "#f59e0b" },
+  { id: 4,  name: "Analisis Volatilitas (ARCH/GARCH via Python)",    color: "bar-analysis", legend: "#ef4444" },
+  { id: 5,  name: "Penyusunan Bab 4 & 5 (Hasil & Pembahasan)",       color: "bar-result",   legend: "#10b981" },
+  { id: 6,  name: "Bimbingan dengan Dosen Pembimbing",                color: "bar-bimbing",  legend: "#06b6d4" },
+  { id: 7,  name: "Penyempurnaan Draft Skripsi",                      color: "bar-draft",    legend: "#ec4899" },
+  { id: 8,  name: "Pengumpulan Draf Final / Daftar Sidang",           color: "bar-collect",  legend: "#64748b" },
+  { id: 9,  name: "Ujian Skripsi (Sidang)",                           color: "bar-exam",     legend: "#dc2626" },
+  { id: 10, name: "Revisi Skripsi setelah Sidang",                    color: "bar-revisi",   legend: "#a855f7" },
+  { id: 11, name: "Pengumpulan Skripsi Final",                        color: "bar-final",    legend: "#059669" },
+];
+
+// Schedule 14 Weeks (Reguler)
+const scheduleReguler = {
+  1:  [1, 3],   // Bab 1-3
+  2:  [3, 4],   // Konsultasi Bab 1-3
+  3:  [3, 5],   // Data
+  4:  [5, 7],   // Analisis Python
+  5:  [7, 9],   // Bab 4-5
+  6:  [5, 11],  // Bimbingan intensif
+  7:  [10, 11], // Penyempurnaan draft
+  8:  [12, 12], // Pengumpulan draf
+  9:  [13, 13], // Sidang
+  10: [14, 14], // Revisi
+  11: [14, 14], // Final
+};
+
+// Schedule 10 Weeks (Akselerasi)
+const scheduleAkselerasi = {
+  1:  [1, 2],   // Bab 1-3
+  2:  [2, 3],   // Konsultasi Bab 1-3
+  3:  [2, 3],   // Data
+  4:  [3, 4],   // Analisis Python
+  5:  [4, 5],   // Bab 4-5
+  6:  [3, 7],   // Bimbingan 
+  7:  [6, 7],   // Penyempurnaan draft
+  8:  [8, 8],   // Pengumpulan draf / Daftar Sidang (Akhir April)
+  9:  [9, 9],   // Sidang (Awal Mei)
+  10: [10, 10], // Revisi
+  11: [10, 10], // Final
+};
+
+const requirementsData = [
+  {
+    group: "Dokumen Akademik",
+    items: [
+      { text: "KRS semester terakhir tinggal menempuh skripsi, lengkap foto & TTD", note: "Berkas asli" },
+      { text: "Bukti lunas biaya pendidikan (SIAKAD)", note: "1 lembar" },
+      { text: "Surat izin penulisan skripsi (Kajur)", note: "1 lembar" },
+      { text: "Bukti konsultasi ditandatangani Dosen Pembimbing", note: "1 lembar" },
+    ]
+  },
+  {
+    group: "Sertifikat & Ijazah",
+    items: [
+      { text: "FC Sertifikat EAP", note: "1 lembar" },
+      { text: "FC Ijazah asli SMA/D3 dilegalisir", note: "3 lembar" },
+      { text: "FC Sertifikat Pre Job Training (PJT)", note: "1 lembar" },
+      { text: "FC Sertifikat pelatihan Lab FEB UNS", note: "Pilih yang relevan" },
+      { text: "FC Sertifikat pelatihan kompetensi manajerial", note: "Wajib Bisnis Digital" },
+    ]
+  },
+  {
+    group: "Naskah & Lainnya",
+    items: [
+      { text: "Naskah skripsi kwarto, belum dijilid, sampul MERAH", note: "3 naskah" },
+      { text: "Print out bukti Turnitin", note: "1 lembar" },
+      { text: "Telah selesai dan lulus KKN", note: "1 lembar" },
+      { text: "Formulir Blanko A, B, C, dan D (bermaterai)", note: "Dilengkapi pas foto" }
+    ]
+  }
+];
+
+// ========================
+// RENDER GANTT CHARTS
+// ========================
+
+function renderGantt(tableId, legendId, schedule, weeks) {
+  const tbody = document.querySelector(`#${tableId} tbody`);
+  const legendDiv = document.getElementById(legendId);
+  tbody.innerHTML = '';
+  legendDiv.innerHTML = '';
+
+  activities.forEach(act => {
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td');
+    tdName.textContent = act.name;
+    tr.appendChild(tdName);
+
+    const [start, end] = schedule[act.id];
+    for (let w = 1; w <= weeks; w++) {
+      const td = document.createElement('td');
+      if (w >= start && w <= end) {
+        const bar = document.createElement('div');
+        bar.className = `gantt-bar ${act.color}`;
+        td.appendChild(bar);
+      }
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  });
+
+  // Legend
+  activities.forEach(act => {
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-color" style="background:${act.legend}"></div>${act.name}`;
+    legendDiv.appendChild(item);
+  });
+}
+
+renderGantt('ganttReguler', 'legendReguler', scheduleReguler, 14);
+renderGantt('ganttAkselerasi', 'legendAkselerasi', scheduleAkselerasi, 10);
+
+// ========================
+// HIGHLIGHT TODAY 
+// ========================
+
+function highlightToday() {
+  const today = new Date();
+  const start = new Date(2026, 2, 1); // March 1, 2026
+  const diffDays = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+  const currentWeek = Math.floor(diffDays / 7) + 1;
+
+  if (currentWeek >= 1 && currentWeek <= 14) {
+    const rowsReg = document.querySelectorAll('#ganttReguler thead th');
+    if (rowsReg[currentWeek]) rowsReg[currentWeek].classList.add('today-header');
+  }
+  if (currentWeek >= 1 && currentWeek <= 10) {
+    const rowsAksel = document.querySelectorAll('#ganttAkselerasi thead th');
+    if (rowsAksel[currentWeek]) rowsAksel[currentWeek].classList.add('today-header');
+  }
+}
+highlightToday();
+
+// ========================
+// RENDER CHECKLISTS
+// ========================
+
+function renderTaskChecklist() {
+  const container = document.getElementById('taskChecklistContainer');
+  container.innerHTML = '';
+  const savedTasks = JSON.parse(localStorage.getItem('skripsi_tasks') || '{}');
+
+  activities.forEach(act => {
+    const isChecked = savedTasks[act.id] || false;
+    const itemDiv = document.createElement('div');
+    itemDiv.className = `checklist-item${isChecked ? ' checked' : ''}`;
+    itemDiv.innerHTML = `
+      <input type="checkbox" ${isChecked ? 'checked' : ''} data-id="${act.id}">
+      <div>
+        <div class="item-text">${act.name}</div>
+      </div>
+    `;
+    itemDiv.addEventListener('click', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+      const cb = itemDiv.querySelector('input');
+      cb.checked = !cb.checked;
+      cb.dispatchEvent(new Event('change'));
+    });
+    itemDiv.querySelector('input').addEventListener('change', (e) => {
+      const s = JSON.parse(localStorage.getItem('skripsi_tasks') || '{}');
+      s[e.target.dataset.id] = e.target.checked;
+      localStorage.setItem('skripsi_tasks', JSON.stringify(s));
+      renderTaskChecklist();
+      updateSummaries();
+    });
+    container.appendChild(itemDiv);
+  });
+}
+
+function renderReqChecklist() {
+  const container = document.getElementById('reqChecklistContainer');
+  container.innerHTML = '';
+  const savedReqs = JSON.parse(localStorage.getItem('skripsi_reqs') || '{}');
+
+  requirementsData.forEach((group, gi) => {
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'checklist-group';
+    groupDiv.innerHTML = `<div class="checklist-group-title">${group.group}</div>`;
+
+    group.items.forEach((item, ii) => {
+      const key = `${gi}-${ii}`;
+      const isChecked = savedReqs[key] || false;
+
+      const itemDiv = document.createElement('div');
+      itemDiv.className = `checklist-item${isChecked ? ' checked' : ''}`;
+      itemDiv.innerHTML = `
+        <input type="checkbox" ${isChecked ? 'checked' : ''} data-key="${key}">
+        <div>
+          <div class="item-text">${item.text}</div>
+          ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
+        </div>
+      `;
+      itemDiv.addEventListener('click', (e) => {
+        if (e.target.tagName === 'INPUT') return;
+        const cb = itemDiv.querySelector('input');
+        cb.checked = !cb.checked;
+        cb.dispatchEvent(new Event('change'));
+      });
+      itemDiv.querySelector('input').addEventListener('change', (e) => {
+        const s = JSON.parse(localStorage.getItem('skripsi_reqs') || '{}');
+        s[e.target.dataset.key] = e.target.checked;
+        localStorage.setItem('skripsi_reqs', JSON.stringify(s));
+        renderReqChecklist();
+        updateSummaries();
+      });
+      groupDiv.appendChild(itemDiv);
+    });
+    container.appendChild(groupDiv);
+  });
+}
+
+// ========================
+// UPDATE SUMMARIES
+// ========================
+
+function updateSummaries() {
+  // Tasks Summary
+  const savedTasks = JSON.parse(localStorage.getItem('skripsi_tasks') || '{}');
+  const doneTasks = Object.values(savedTasks).filter(Boolean).length;
+  const totalTasks = activities.length;
+  const taskPct = Math.round((doneTasks / totalTasks) * 100) || 0;
+  
+  document.getElementById('tasksDone').textContent = doneTasks;
+  document.getElementById('tasksTotal').textContent = `dari ${totalTasks} kegiatan`;
+  document.getElementById('taskProgressBar').style.width = `${taskPct}%`;
+  document.getElementById('taskProgressText').textContent = `${taskPct}% selesai`;
+
+  // Requirements Summary
+  const savedReqs = JSON.parse(localStorage.getItem('skripsi_reqs') || '{}');
+  const totalReqs = requirementsData.reduce((s, g) => s + g.items.length, 0);
+  const doneReqs = Object.values(savedReqs).filter(Boolean).length;
+  const reqPct = Math.round((doneReqs / totalReqs) * 100) || 0;
+
+  document.getElementById('reqsDone').textContent = doneReqs;
+  document.getElementById('reqsTotal').textContent = `dari ${totalReqs} item`;
+  document.getElementById('reqProgressBar').style.width = `${reqPct}%`;
+  document.getElementById('reqProgressText').textContent = `${reqPct}% terpenuhi`;
+
+  // Status Label dynamic update
+  const statusLabel = document.getElementById('statusLabel');
+  if (taskPct === 100 && reqPct === 100) {
+    statusLabel.textContent = "Selesai!";
+    statusLabel.style.color = "var(--green)";
+  } else if (taskPct > 0 || reqPct > 0) {
+    statusLabel.textContent = "In Progress";
+    statusLabel.style.color = "var(--primary)";
+  } else {
+    statusLabel.textContent = "Persiapan";
+    statusLabel.style.color = "var(--gray-500)";
+  }
+}
+
+renderTaskChecklist();
+renderReqChecklist();
+updateSummaries();
+
+// ========================
+// TABS HANDLING
+// ========================
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+
+    // Update active scenario card
+    const label = document.getElementById('activeScenario');
+    const dates = document.getElementById('activeDates');
+    if (tab.dataset.tab === 'scenarioReguler') {
+      label.textContent = 'Reguler';
+      dates.textContent = '1 Mar — 6 Jun 2026';
+    } else if (tab.dataset.tab === 'scenarioAkselerasi') {
+      label.textContent = 'Akselerasi';
+      dates.textContent = '1 Mar — 9 Mei 2026';
+    } else {
+      label.textContent = 'Checklists';
+      dates.textContent = 'Fokus Eksekusi';
+    }
+  });
+});
+
+</script>
+</body>
+</html>
